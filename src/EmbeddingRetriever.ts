@@ -18,6 +18,10 @@ export default class EmbeddingRetriever {
         return embedding;
     }
 
+    addEmbeddedDocument(section: string, embedding: number[]) {
+        this.vectorStore.addEmbedding(embedding, section);
+    }
+
     async embedQuery(query: string) {
         logTitle('EMBEDDING QUERY');
         const embedding = await this.embed(query);

@@ -8,3 +8,5 @@
 node_modules
 dist
 *.txt
+*.embedding.json
+output/*
