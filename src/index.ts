@@ -7,12 +7,13 @@ import { logTitle } from "./utils";
 
 const URL = 'https://news.ycombinator.com/'
 const outPath = path.join(process.cwd(), 'output');
+
 const TASK = `
 告诉我Antonette的信息,先从我给你的context中找到相关信息,总结后创作一个关于她的故事
 把故事和她的基本信息保存到${outPath}/antonette.md,输出一个漂亮md文件
 `
 
-const fetchMCP = new MCPClient("mcp-server-fetch", "uvx", ['mcp-server-fetch']);
+const fetchMCP = new MCPClient("mcp-server-fetch", "npx", ['-y', '@tokenizin/mcp-npx-fetch']);
 const fileMCP = new MCPClient("mcp-server-file", "npx", ['-y', '@modelcontextprotocol/server-filesystem', outPath]);
 
 async function main() {
@@ -22,8 +23,21 @@ async function main() {
     // Agent
     const agent = new Agent('openai/gpt-4o-mini', [fetchMCP, fileMCP], '', context);
     await agent.init();
+
+    // 优雅退出机制
+    const handleExit = async () => {
+        console.log('\nGracefully shutting down...');
+        await agent.close();
+        process.exit(0);
+    };
+    process.on('SIGINT', handleExit);
+    process.on('SIGTERM', handleExit);
+
     await agent.invoke(TASK);
     await agent.close();
+    // 移除监听，防止重复关闭
+    process.off('SIGINT', handleExit);
+    process.off('SIGTERM', handleExit);
 }
 
 main()
