@@ -4,6 +4,7 @@ import path from "path";
 import EmbeddingRetriever from "./EmbeddingRetriever";
 import fs from "fs";
 import { logTitle } from "./utils";
+import Reranker from "./Reranker";
 
 const URL = 'https://news.ycombinator.com/'
 const outPath = path.join(process.cwd(), 'output');
@@ -21,7 +22,7 @@ async function main() {
     const context = await retrieveContext();
 
     // Agent
-    const agent = new Agent('openai/gpt-4o-mini', [fetchMCP, fileMCP], '', context);
+    const agent = new Agent('deepseek-ai/DeepSeek-R1', [fetchMCP, fileMCP], '', context);
     await agent.init();
 
     // 优雅退出机制
@@ -45,6 +46,7 @@ main()
 async function retrieveContext() {
     // RAG
     const embeddingRetriever = new EmbeddingRetriever("BAAI/bge-m3");
+    const reranker = new Reranker("BAAI/bge-reranker-v2-m3"); // 新增重排器
     const knowledgeDir = path.join(process.cwd(), 'knowledge');
     const embeddingCacheDir = path.join(process.cwd(), 'embedding-cache');
     if (!fs.existsSync(embeddingCacheDir)) {
@@ -75,7 +77,13 @@ async function retrieveContext() {
             fs.writeFileSync(embeddingPath, JSON.stringify(embeddings, null, 2), 'utf-8');
         }
     }
-    const context = (await embeddingRetriever.retrieve(TASK, 3)).join('\n');
+    const k = 5
+    // 先用向量检索获取候选
+    const candidates = await embeddingRetriever.retrieve(TASK, k * 2);
+    // 用 Reranker 进行重排
+    const reranked = await reranker.rerank(TASK, candidates, k);
+    // 整理
+    const context = reranked.map(item => item.document).join('\n');
     logTitle('CONTEXT');
     console.log(context);
     return context
