@@ -66,7 +66,7 @@ async function retrieveContext() {
         } else {
             // 没有embedding，生成并保存
             const content = fs.readFileSync(filePath, 'utf-8');
-            const sections = content.split(/(\r?\n){2,}/);
+            const sections = getChunks(content);
             for (const section of sections) {
                 if (!section.trim()) continue;
                 const embedding = await embeddingRetriever.embedDocument(section);
@@ -79,4 +79,31 @@ async function retrieveContext() {
     logTitle('CONTEXT');
     console.log(context);
     return context
+}
+
+function getChunks(content: string) {
+    if (!content) return [];
+    // 首先使用两个或更多的连续换行符作为分隔符
+    // 如果已拆分的内容中有至少两个的 \n—{5,}\n 作分隔符，且数量为偶数，则将第 n (n>=0)个分隔符之后的内容与第 n+2 个分隔符之前的内容划分为一个块
+
+    // 一级分块：用两个或更多换行符分割
+    const primaryChunks = content.split(/(\r?\n){2,}/).map(chunk => chunk.trim()).filter(Boolean);
+
+    const delimiterRegex = /(\r?\n)[—-]{5,}/;
+
+    return primaryChunks.flatMap(chunk => {
+        // 检查是否存在至少两个 \n—{5,}\n 分隔符，且数量为偶数
+        const subSplited = chunk.split(delimiterRegex).map(subChunk => subChunk.trim()).filter(Boolean);
+        const subChunks: string[] = [];
+        subSplited.forEach((subChunk, index) => {
+            // 如果是偶数索引，且不是最后一个分块，则将当前分块与下一个分块合并
+            if (index % 2 === 0 && index < subSplited.length - 1) {
+                subChunks.push(`${subChunk}\n${subSplited[index + 1]}`);
+            } else if (index % 2 === 0) {
+                // 如果是最后一个分块，直接添加
+                subChunks.push(subChunk);
+            }
+        })
+        return subChunks;
+    });
 }
