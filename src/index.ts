@@ -10,8 +10,8 @@ const URL = 'https://news.ycombinator.com/'
 const outPath = path.join(process.cwd(), 'output');
 
 const TASK = `
-告诉我Antonette的信息,先从我给你的context中找到相关信息,总结后创作一个关于她的故事
-把故事和她的基本信息保存到${outPath}/antonette.md,输出一个漂亮md文件
+于儿神入侵的计划是什么，为何要这样推进？
+将得出的结论保存到 ${outPath}/yangna.md ，输出一个漂亮 md 文件
 `
 
 const fetchMCP = new MCPClient("mcp-server-fetch", "npx", ['-y', '@tokenizin/mcp-npx-fetch']);
@@ -22,7 +22,7 @@ async function main() {
     const context = await retrieveContext();
 
     // Agent
-    const agent = new Agent('deepseek-ai/DeepSeek-R1', [fetchMCP, fileMCP], '', context);
+    const agent = new Agent('Qwen/Qwen3-235B-A22B', [fetchMCP, fileMCP], '', context);
     await agent.init();
 
     // 优雅退出机制
@@ -45,7 +45,7 @@ main()
 
 async function retrieveContext() {
     // RAG
-    const embeddingRetriever = new EmbeddingRetriever("BAAI/bge-m3");
+    const embeddingRetriever = new EmbeddingRetriever("Qwen/Qwen3-Embedding-8B");
     const reranker = new Reranker("BAAI/bge-reranker-v2-m3"); // 新增重排器
     const knowledgeDir = path.join(process.cwd(), 'knowledge');
     const embeddingCacheDir = path.join(process.cwd(), 'embedding-cache');
