@@ -53,7 +53,7 @@ async function retrieveContext() {
         fs.mkdirSync(embeddingCacheDir, { recursive: true });
     }
     const files = fs.readdirSync(knowledgeDir);
-    for await (const file of files) {
+    for (const file of files) {
         const filePath = path.join(knowledgeDir, file);
         const embeddingPath = path.join(embeddingCacheDir, `${file}.embedding.json`);
         let embeddings: any[] = [];

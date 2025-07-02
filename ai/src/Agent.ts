@@ -18,7 +18,7 @@ export default class Agent {
 
     async init() {
         logTitle('TOOLS');
-        for await (const client of this.mcpClients) {
+        for (const client of this.mcpClients) {
             await client.init();
         }
         const tools = this.mcpClients.flatMap(client => client.getTools());
@@ -26,7 +26,7 @@ export default class Agent {
     }
 
     async close() {
-        for await (const client of this.mcpClients) {
+        for (const client of this.mcpClients) {
             await client.close();
         }
     }

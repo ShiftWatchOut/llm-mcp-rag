@@ -5,11 +5,13 @@
     "moduleResolution": "Bundler",
     "esModuleInterop": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "strict": true
   },
   "include": [
-    "src/**/*"
+    "ai/src/**/*",
+    "client/src/**/*",
+    "server/src/**/*"
   ],
   "exclude": [
     "node_modules"
