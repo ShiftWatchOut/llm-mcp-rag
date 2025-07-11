@@ -42,6 +42,7 @@ export default class EmbeddingRetriever {
             }),
         });
         const data = await response.json();
+        console.log('API Request:', document);
         console.log(data.data[0].embedding);
         return data.data[0].embedding;
     }
