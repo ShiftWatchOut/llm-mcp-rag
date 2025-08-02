@@ -1,4 +1,3 @@
 packages:
-  - ai
   - client
   - server

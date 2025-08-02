@@ -9,7 +9,6 @@
     "strict": true
   },
   "include": [
-    "ai/src/**/*",
     "client/src/**/*",
     "server/src/**/*"
   ],

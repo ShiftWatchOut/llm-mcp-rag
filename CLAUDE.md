@@ -4,14 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Architecture
 
-This is a monorepo with 4 main packages implementing an Augmented LLM system with MCP (Model Context Protocol) and RAG (Retrieval-Augmented Generation):
+This is a monorepo with 3 main packages implementing an Augmented LLM system with MCP (Model Context Protocol) and RAG (Retrieval-Augmented Generation):
 
-- **ai/**: Core LLM agent with MCP clients and RAG retrieval
+- **server/**: Main backend with complete RAG functionality, FastAPI server, and MCP integration
 - **client/**: React frontend with Vite and Semi Design UI components
-- **server/**: Fastify backend server  
-- **root/**: Workspace configuration with pnpm
+- **ai/**: Legacy package (deprecated) - RAG functionality has been moved to server
 
-### Core Components (ai package)
+### Core Components (server package)
 
 - `Agent.ts`: Main orchestrator managing LLM, MCP clients, and context
 - `MCPClient.ts`: MCP client for connecting to external tools (fetch, filesystem)
@@ -19,6 +18,7 @@ This is a monorepo with 4 main packages implementing an Augmented LLM system wit
 - `EmbeddingRetriever.ts`: Vector-based document retrieval with embedding cache
 - `VectorStore.ts`: In-memory vector storage with cosine similarity search
 - `Reranker.ts`: Document reranking for improved retrieval relevance
+- `main.ts`: FastAPI server with RAG-enabled chat endpoints
 
 ### MCP Integration
 
@@ -30,16 +30,16 @@ The system uses MCP servers for external capabilities:
 ### RAG Pipeline
 
 1. Documents chunked using paragraph and delimiter-based splitting
-2. Embeddings cached in `embedding-cache/` directory  
+2. Embeddings cached in `server/embedding-cache/` directory  
 3. Two-stage retrieval: vector search + reranking
-4. Context injected into LLM prompts
+4. Context injected dynamically per chat request
 
 ## Development Commands
 
-### AI Package
+### Server Package (Main Application)
 ```bash
-cd ai
-pnpm dev          # Run the agent
+cd server
+pnpm dev          # Start FastAPI server with RAG
 pnpm build        # Compile TypeScript
 pnpm start        # Run compiled version
 ```
@@ -53,10 +53,10 @@ pnpm lint         # Run ESLint
 pnpm preview      # Preview production build
 ```
 
-### Server Package
+### AI Package (Legacy)
 ```bash
-cd server  
-pnpm dev          # Start Fastify server with tsx
+cd ai
+pnpm dev          # Shows migration notice and examples
 ```
 
 ### Root Workspace
@@ -64,12 +64,19 @@ pnpm dev          # Start Fastify server with tsx
 pnpm install      # Install all dependencies
 ```
 
+## API Endpoints
+
+- `POST /api/chat`: Chat with RAG-enabled AI agent
+- `GET /api/health`: Health check endpoint
+- `GET /`: Basic hello world endpoint
+
 ## Configuration
 
 - Uses pnpm workspaces for monorepo management
 - TypeScript with ES modules throughout
-- Environment variables loaded via dotenv
-- Embedding and output files cached locally
+- Environment variables in `server/.env`
+- Knowledge files in `server/knowledge/`
+- Embedding cache in `server/embedding-cache/`
 
 ## Key Dependencies
 
@@ -78,3 +85,7 @@ pnpm install      # Install all dependencies
 - **React 17**: Frontend UI framework
 - **Fastify**: Backend web framework
 - **Vite**: Frontend build tool
+
+## Migration Notes
+
+RAG functionality has been consolidated into the server package. The ai package is kept for reference but no longer contains the main implementation.
